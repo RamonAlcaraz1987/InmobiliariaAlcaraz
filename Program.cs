@@ -1,7 +1,13 @@
+using InmobiliariaAlcaraz.Models;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddTransient<IRepositorioPropietario, RepositorioPropietario>();
+builder.Services.AddTransient<IRepositorioInquilino, RepositorioInquilino>();
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 var app = builder.Build();
 
@@ -22,6 +28,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Propietario}/{action=Index}/{id?}");
 
 app.Run();
