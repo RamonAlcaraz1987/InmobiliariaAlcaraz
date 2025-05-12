@@ -8,9 +8,11 @@ namespace InmobiliariaAlcaraz.Models
 {
     public interface IRepositorioPropietario : IRepositorio<Propietario>
     {
-       // Propietario ObtenerPorEmail(string email);
-       // IList<Propietario> BuscarPorNombre(string nombre);
+   
 
         IList<Propietario>ObtenerLista(int paginaNro, int tamPagina);
+        int ObtenerCantidad();
+        IList<Propietario> BuscarPorNombre(string nombre);
+
     }
 }

@@ -181,5 +181,23 @@ namespace InmobiliariaAlcaraz.Models
             }
             return res;
         }
+
+        
+        public int ObtenerCantidad()
+        {
+            int cantidad = 0;
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                var query = "SELECT COUNT(*) FROM inquilinos";
+                using (var command = new MySqlCommand(query, (MySqlConnection)connection))
+                {
+                    cantidad = Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+            return cantidad;
+        }
+       
+        
     }
 }

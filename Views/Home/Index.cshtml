@@ -1,8 +1,70 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<string>
+
+@{
+    ViewData["Title"] = "Inicio";
 }
 
+<style>
+    body {
+        background-image: url('/uploads/inicio.jpg');
+        background-size: cover; 
+        background-position: center; 
+        background-repeat: no-repeat; 
+        background-attachment: fixed; 
+        min-height: 100vh; 
+    }
+    .welcome-message {
+        color: rgb(235, 46, 46);
+    }
+</style>
+
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <h1 class="display-4 welcome-message">@ViewBag.MensajeBienvenida</h1>
+        
+        <div class="d-flex justify-content-center mt-4">
+            <ul class="list-group" style="width: 40%; font-size: 0.9rem;">
+                @foreach (var cliente in Model)
+                {
+                    <li class="list-group-item py-1">@cliente</li>
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <h1 class="display-4">@ViewBag.Titulo</h1>
+        <p>Por favor inicie sesión para acceder al sistema.</p>
+        
+        <div class="card mt-4" style="max-width: 400px; margin: 0 auto;">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Acceso al sistema</h4>
+            </div>
+            <div class="card-body p-3">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger py-2">
+                        <i class="fas fa-exclamation-circle"></i> @ViewBag.ErrorMessage
+                    </div>
+                }
+                
+                <form asp-controller="Usuario" asp-action="Login" method="post">
+                    <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+                    
+                    <div class="form-group mb-2">
+                        <label for="Usuario" class="mb-1">Email</label>
+                        <input type="email" class="form-control form-control-sm" name="Usuario" required />
+                    </div>
+                    
+                    <div class="form-group mb-2">
+                        <label for="Clave" class="mb-1">Contraseña</label>
+                        <input type="password" class="form-control form-control-sm" name="Clave" required />
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-sm w-100">Entrar</button>
+                </form>
+            </div>
+        </div>
+    }
 </div>

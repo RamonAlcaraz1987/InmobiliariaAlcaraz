@@ -1,0 +1,66 @@
+@model InmobiliariaAlcaraz.Models.Pago
+@{
+    ViewData["Title"] = "Detalle de Pago";
+}
+
+<h1>Detalle de Pago</h1>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">N° Pago</dt>
+            <dd class="col-sm-9">@Model.IdPago</dd>
+
+            <dt class="col-sm-3">Contrato</dt>
+            <dd class="col-sm-9">@Model.IdContrato</dd>
+
+            <dt class="col-sm-3">Monto</dt>
+            <dd class="col-sm-9">@Model.Monto.ToString("C")</dd>
+
+            <dt class="col-sm-3">Fecha Pago</dt>
+            <dd class="col-sm-9">@(Model.FechaPago?.ToString("dd/MM/yyyy") ?? "-")</dd>
+
+            <dt class="col-sm-3">N° Pago</dt>
+            <dd class="col-sm-9">@Model.NumeroPago</dd>
+
+            <dt class="col-sm-3">Detalle</dt>
+            <dd class="col-sm-9">@Model.Detalle</dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">
+                @if (Model.Anulado)
+                {
+                    <span class="badge bg-danger">Anulado</span>
+                }
+                else
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Es Multa</dt>
+            <dd class="col-sm-9">@(Model.EsMulta == 1 ? "Sí" : "No")</dd>
+
+            <dt class="col-sm-3">Creado por</dt>
+            <dd class="col-sm-9">@Model.UsuarioCreacion?.Nombre @Model.UsuarioCreacion?.Apellido</dd>
+
+            <dt class="col-sm-3">Fecha Creación</dt>
+            <dd class="col-sm-9">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            <dt class="col-sm-3">Anulado por</dt>
+            <dd class="col-sm-9">@(Model.UsuarioAnulacion != null ? $"{Model.UsuarioAnulacion.Nombre} {Model.UsuarioAnulacion.Apellido}" : "-")</dd>
+
+            <dt class="col-sm-3">Fecha Anulación</dt>
+            <dd class="col-sm-9">@(Model.FechaAnulacion?.ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
+        </dl>
+
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-secondary">Volver</a>
+            @if (User.IsInRole("Administrador") && !Model.Anulado)
+            {
+                <a asp-action="Editar" asp-route-id="@Model.IdPago" class="btn btn-warning">Editar</a>
+                <a asp-action="Anular" asp-route-id="@Model.IdPago" class="btn btn-danger">Anular</a>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+@model InmobiliariaAlcaraz.Models.Contrato
+
+@{
+    ViewData["Title"] = "Finalizar Contrato Anticipadamente";
+}
+
+<h1>Finalizar Contrato Anticipadamente</h1>
+
+<div class="alert alert-warning">
+    <p>¿Está seguro de que desea finalizar anticipadamente el contrato N° @Model.IdContrato?</p>
+    <p>Seleccione la fecha de finalización anticipada dentro del rango del contrato (@Model.FechaInicio.ToString("dd/MM/yyyy") - @Model.FechaFin.ToString("dd/MM/yyyy")).</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Inquilino</dt>
+            <dd class="col-sm-9">@Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</dd>
+            <dt class="col-sm-3">Inmueble</dt>
+            <dd class="col-sm-9">@Model.Inmueble?.Direccion</dd>
+            <dt class="col-sm-3">Fecha de Inicio</dt>
+            <dd class="col-sm-9">@Model.FechaInicio.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3">Fecha de Fin Original</dt>
+            <dd class="col-sm-9">@Model.FechaFin.ToString("dd/MM/yyyy")</dd>
+        </dl>
+        <form asp-action="FinalizarAnticipado" method="post">
+            <input type="hidden" asp-for="IdContrato" />
+            <div class="mb-3">
+                <label class="form-label" for="FechaFinAnticipado">Fecha de Finalización Anticipada</label>
+                <input type="date" class="form-control" id="FechaFinAnticipado" name="FechaFinAnticipado" 
+                       min="@Model.FechaInicio.ToString("yyyy-MM-dd")" 
+                       max="@Model.FechaFin.ToString("yyyy-MM-dd")" 
+                       value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                <small class="form-text text-muted">Seleccione una fecha entre @Model.FechaInicio.ToString("dd/MM/yyyy") y @Model.FechaFin.ToString("dd/MM/yyyy").</small>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-stop-circle"></i> Confirmar Finalización
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

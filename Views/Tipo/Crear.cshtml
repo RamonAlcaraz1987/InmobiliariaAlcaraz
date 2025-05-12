@@ -1,0 +1,18 @@
+@model InmobiliariaAlcaraz.Models.Tipo
+@{
+    ViewData["Title"] = "Nuevo Tipo";
+}
+
+<h1>Agregar Tipo</h1>
+
+<form asp-action="Crear">
+    <div class="form-group">
+        <label asp-for="Descripcion" class="control-label"></label>
+        <input asp-for="Descripcion" class="form-control" />
+        <span asp-validation-for="Descripcion" class="text-danger"></span>
+    </div>
+    <div class="form-group mt-3">
+        <input type="submit" value="Guardar" class="btn btn-primary" />
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </div>
+</form>

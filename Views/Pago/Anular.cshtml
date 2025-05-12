@@ -1,0 +1,36 @@
+@model InmobiliariaAlcaraz.Models.Pago
+@{
+    ViewData["Title"] = "Anular Pago";
+}
+
+<h1>Anular Pago</h1>
+
+<div class="alert alert-warning">
+    ¿Está seguro de que desea anular el pago N° @Model.IdPago para el contrato @Model.IdContrato?
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Monto</dt>
+            <dd class="col-sm-9">@Model.Monto.ToString("C")</dd>
+
+            <dt class="col-sm-3">Fecha Pago</dt>
+            <dd class="col-sm-9">@(Model.FechaPago?.ToString("dd/MM/yyyy") ?? "-")</dd>
+
+            <dt class="col-sm-3">N° Pago</dt>
+            <dd class="col-sm-9">@Model.NumeroPago</dd>
+
+            <dt class="col-sm-3">Detalle</dt>
+            <dd class="col-sm-9">@Model.Detalle</dd>
+        </dl>
+
+        <form asp-action="Anular" method="post">
+            <input type="hidden" asp-for="IdPago" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Confirmar Anulación</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

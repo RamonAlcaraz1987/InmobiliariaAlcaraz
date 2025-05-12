@@ -1,0 +1,45 @@
+@model IEnumerable<InmobiliariaAlcaraz.Models.Tipo>
+@{
+    ViewData["Title"] = "Tipos";
+}
+
+<h1>Listado de Tipos</h1>
+
+<p>
+    <a asp-action="Crear" class="btn btn-primary">Nuevo Tipo</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Descripción</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var tipo in Model)
+    {
+        <tr>
+            <td>@tipo.Descripcion</td>
+            <td>
+                <a asp-action="Detalle" asp-route-id="@tipo.IdTipo" class="btn btn-info btn-sm">Detalle</a>
+                <a asp-action="Editar" asp-route-id="@tipo.IdTipo" class="btn btn-warning btn-sm">Editar</a>
+                @if(User.IsInRole("Administrador")){
+                <a asp-action="Eliminar" asp-route-id="@tipo.IdTipo" class="btn btn-danger btn-sm">Eliminar</a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= ViewBag.TotalPaginas; i++)
+        {
+            <li class="page-item @(i == ViewBag.PaginaActual ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>

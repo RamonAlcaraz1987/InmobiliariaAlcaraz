@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Lista de Inquilinos";
+    var paginaActual = ViewBag.PaginaActual as int? ?? 1;
+    var totalPaginas = ViewBag.TotalPaginas as int? ?? 1;
 }
 
 <h1>Inquilinos</h1>
@@ -10,7 +12,7 @@
     <a asp-action="Crear" class="btn btn-primary">Nuevo Inquilino</a>
 </p>
 
-<table class="table">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>@Html.DisplayNameFor(model => model.Dni)</th>
@@ -31,11 +33,31 @@
                 <td>@Html.DisplayFor(modelItem => item.Email)</td>
                 <td>@Html.DisplayFor(modelItem => item.Direccion)</td>
                 <td>
-                    <a asp-action="Editar" asp-route-id="@item.IdInquilino" class="btn btn-warning">Editar</a>
-                    <a asp-action="Detalle" asp-route-id="@item.IdInquilino" class="btn btn-info">Detalles</a>
-                    <a asp-action="Eliminar" asp-route-id="@item.IdInquilino" class="btn btn-danger">Eliminar</a>
+                    <a asp-action="Editar" asp-route-id="@item.IdInquilino" class="btn btn-warning btn-sm">Editar</a>
+                    <a asp-action="Detalle" asp-route-id="@item.IdInquilino" class="btn btn-info btn-sm">Detalles</a>
+                    @if (User.IsInRole("Administrador"))
+                    {
+                    <a asp-action="Eliminar" asp-route-id="@item.IdInquilino" class="btn btn-danger btn-sm">Eliminar</a>
+                    }
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<nav aria-label="Paginación">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)">Anterior</a>
+        </li>
+        @for (int i = 1; i <= totalPaginas; i++)
+        {
+            <li class="page-item @(i == paginaActual ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+            </li>
+        }
+        <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)">Siguiente</a>
+        </li>
+    </ul>
+</nav>

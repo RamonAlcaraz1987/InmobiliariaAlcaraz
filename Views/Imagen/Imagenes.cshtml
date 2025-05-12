@@ -1,0 +1,64 @@
+@{
+    var idInmueble = ViewBag.IdInmueble;
+}
+
+<h3>Imágenes del Inmueble @idInmueble</h3>
+
+<form id="formCarga" enctype="multipart/form-data">
+    <input type="hidden" name="idInmueble" value="@idInmueble" />
+    <input type="file" name="archivo" />
+    <button type="submit" class="btn btn-primary">Subir Imagen</button>
+</form>
+
+<hr />
+
+<div id="contenedorImagenes" class="row"></div>
+
+@section Scripts {
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function(){
+    function cargarImagenes() {
+        $.get('/Imagen/ObtenerPorInmueble', { id: @idInmueble })
+         .done(imgs => {
+            $('#contenedorImagenes').empty();
+            imgs.forEach(i => {
+                $('#contenedorImagenes').append(`
+                    <div class="col-md-3 text-center">
+                        <img src="${i.url}" class="img-fluid mb-2" />
+                        <button class="btn btn-danger btn-sm" onclick="eliminar(${i.idImagen})">Eliminar</button>
+                    </div>`);
+            });
+        });
+    }
+
+    $('#formCarga').submit(function(e){
+        e.preventDefault();
+        var formData = new FormData(this);
+        $.ajax({
+            url: '/Imagen/SubirImagen',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false
+        }).done(() => {
+            cargarImagenes();
+            this.reset();
+        }).fail((xhr) => {
+            alert('Error: ' + xhr.responseText);
+        });
+    });
+
+    window.eliminar = async function(id) {
+        const confirmed = await confirm('¿Eliminar imagen?');
+        if (!confirmed) return;
+        $.post('/Imagen/EliminarImagen', { id: id })
+         .done(() => cargarImagenes())
+         .fail(xhr => alert('Error: ' + xhr.responseText));
+    }
+
+    // Carga inicial
+    cargarImagenes();
+});
+</script>
+}

@@ -29,6 +29,16 @@ namespace InmobiliariaAlcaraz.Models
 
         [StringLength(50)]
         public string Direccion { get; set; }
+
+        public override string ToString(){
+
+            var res = $"{Nombre} {Apellido}";
+			if(!String.IsNullOrEmpty(Dni)) {
+				res += $" ({Dni})";
+			}
+			return res;
+        }
+
         
 }
 }

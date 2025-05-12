@@ -1,0 +1,286 @@
+@model InmobiliariaAlcaraz.Models.Contrato
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Crear Contrato";
+    var historialContratos = ViewBag.HistorialContratos as IList<Contrato>;
+    var paginaActual = ViewBag.PaginaActual as int? ?? 1;
+    var totalPaginas = ViewBag.TotalPaginas as int? ?? 1;
+    var idInmueble = ViewBag.IdInmueble as int? ?? 0;
+    var inmueble = ViewBag.Inmueble as InmobiliariaAlcaraz.Models.Inmueble;
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Crear Nuevo Contrato</h1>
+        <hr />
+        <form asp-action="Crear">
+            <input type="hidden" asp-for="IdInmueble" value="@inmueble.IdInmueble" />
+            <input type="hidden" asp-for="MontoMensual" value="@inmueble.Precio" />
+            <input type="hidden" asp-for="IdUsuarioCreacion" value="@User.FindFirstValue(ClaimTypes.NameIdentifier)" />
+            <input type="hidden" asp-for="FechaCreacion" value="@DateTime.Now" />
+            <input type="hidden" asp-for="Estado" value="1" />
+            <div class="form-group">
+                <label>Inmueble</label>
+                <input class="form-control" value="@inmueble.Direccion (Precio: @inmueble.Precio.ToString("C"))" readonly />
+            </div>
+            <div class="form-group">
+                <label asp-for="IdInquilino">Inquilino</label>
+                <select asp-for="IdInquilino" id="Inquilino" class="form-control" style="width: 100%;" required>
+                    <option value="">Seleccione un inquilino</option>
+                </select>
+                <span asp-validation-for="IdInquilino" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaInicio"></label>
+                <input asp-for="FechaInicio" type="date" class="form-control" id="FechaInicio" required min="@today" />
+                <span asp-validation-for="FechaInicio" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaFin"></label>
+                <input asp-for="FechaFin" type="date" class="form-control" id="FechaFin" required min="@today" />
+                <span asp-validation-for="FechaFin" class="text-danger"></span>
+            </div>
+            <div id="dateError" class="text-danger" style="display: none;"></div>
+            <button type="submit" id="submitButton" class="btn btn-primary">Guardar</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Historial de Contratos</h4>
+            </div>
+            <div class="card-body">
+                @if (historialContratos != null && historialContratos.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Inquilino</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Fecha Fin</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var contrato in historialContratos)
+                                {
+                                    <tr>
+                                        <td>@contrato.Inquilino.Nombre @contrato.Inquilino.Apellido</td>
+                                        <td>@contrato.FechaInicio.ToString("dd/MM/yyyy")</td>
+                                        <td>@contrato.FechaFin.ToString("dd/MM/yyyy")</td>
+                                        <td>@(contrato.Estado == 1 ? "Activo" : "Finalizado")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav aria-label="Paginación historial">
+                        <ul class="pagination pagination-sm justify-content-center">
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <a class="page-link" 
+                                   asp-action="Crear" 
+                                   asp-route-id="@idInmueble" 
+                                   asp-route-pagina="@(paginaActual - 1)">Anterior</a>
+                            </li>
+                            @for (int i = 1; i <= totalPaginas; i++)
+                            {
+                                <li class="page-item @(i == paginaActual ? "active" : "")">
+                                    <a class="page-link" 
+                                       asp-action="Crear" 
+                                       asp-route-id="@idInmueble" 
+                                       asp-route-pagina="@i">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                                <a class="page-link" 
+                                   asp-action="Crear" 
+                                   asp-route-id="@idInmueble" 
+                                   asp-route-pagina="@(paginaActual + 1)">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+                else
+                {
+                    <p>No hay contratos previos para este inmueble.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script>
+        $(document).ready(function() {
+            $('#Inquilino').select2({
+                ajax: {
+                    url: '/Inquilino/Buscar',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return { q: params.term };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.datos.map(function(item) {
+                                return {
+                                    id: item.idInquilino,
+                                    text: item.nombre + ' ' + item.apellido + ' (DNI: ' + item.dni + ')'
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                placeholder: 'Buscar inquilino...',
+                minimumInputLength: 1
+            });
+
+            $('#FechaInicio').on('change', function() {
+                var fechaInicio = $(this).val();
+                if (fechaInicio) {
+                    var dateInicio = new Date(fechaInicio);
+                    var dateFin = new Date(dateInicio);
+                    dateFin.setMonth(dateInicio.getMonth() + 1);
+                    if (dateFin.getDate() < dateInicio.getDate()) {
+                        dateFin.setDate(dateInicio.getDate());
+                    }
+                    var fechaFinStr = dateFin.toISOString().split('T')[0];
+                    $('#FechaFin').val(fechaFinStr);
+                    validateDates();
+                } else {
+                    $('#FechaFin').val('');
+                    $('#dateError').hide();
+                    $('#submitButton').prop('disabled', true);
+                }
+            });
+
+            function validateDates() {
+                var fechaInicio = $('#FechaInicio').val();
+                var fechaFin = $('#FechaFin').val();
+                var idInmueble = $('#IdInmueble').val();
+
+                $('#dateError').hide();
+                $('#submitButton').prop('disabled', false);
+
+                if (fechaInicio && fechaFin && idInmueble) {
+                    var dateInicio = new Date(fechaInicio);
+                    var dateFin = new Date(fechaFin);
+
+                    // Validate FechaFin is after FechaInicio
+                    if (dateFin <= dateInicio) {
+                        $('#dateError').text('La fecha de fin debe ser posterior a la de inicio').show();
+                        $('#submitButton').prop('disabled', true);
+                        return;
+                    }
+
+                    var months = (dateFin.getFullYear() - dateInicio.getFullYear()) * 12 + dateFin.getMonth() - dateInicio.getMonth();
+                    if (dateFin.getDate() >= dateInicio.getDate()) {
+                        months++;
+                    }
+                    if (months < 1) {
+                        $('#dateError').text('El contrato debe tener una duración mínima de un mes').show();
+                        $('#submitButton').prop('disabled', true);
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '/Contrato/ValidarFechas',
+                        type: 'GET',
+                        data: {
+                            idInmueble: idInmueble,
+                            fechaInicio: fechaInicio,
+                            fechaFin: fechaFin
+                        },
+                        success: function(response) {
+                            if (response.isValid) {
+                                $('#dateError').hide();
+                                $('#submitButton').prop('disabled', false);
+                            } else {
+                                $('#dateError').text('Las fechas seleccionadas se solapan con un contrato existente').show();
+                                $('#submitButton').prop('disabled', true);
+                            }
+                        },
+                        error: function() {
+                            $('#dateError').text('Error al validar las fechas').show();
+                            $('#submitButton').prop('disabled', true);
+                        }
+                    });
+                } else {
+                    $('#dateError').text('Por favor, seleccione ambas fechas').show();
+                    $('#submitButton').prop('disabled', true);
+                }
+            }
+
+            $('#FechaInicio, #FechaFin').on('change', validateDates);
+
+            $('form').submit(function(e) {
+                var fechaInicio = $('#FechaInicio').val();
+                var fechaFin = $('#FechaFin').val();
+                var inquilino = $('#Inquilino').val();
+
+                if (!fechaInicio || !fechaFin) {
+                    $('#dateError').text('Por favor, seleccione ambas fechas').show();
+                    e.preventDefault();
+                    return false;
+                }
+
+                var dateInicio = new Date(fechaInicio);
+                var dateFin = new Date(fechaFin);
+
+                if (dateFin <= dateInicio) {
+                    $('#dateError').text('La fecha de fin debe ser posterior a la de inicio').show();
+                    e.preventDefault();
+                    return false;
+                }
+
+                var months = (dateFin.getFullYear() - dateInicio.getFullYear()) * 12 + dateFin.getMonth() - dateInicio.getMonth();
+                if (dateFin.getDate() >= dateInicio.getDate()) {
+                    months++;
+                }
+                if (months < 1) {
+                    $('#dateError').text('El contrato debe tener una duración mínima de un mes').show();
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (!inquilino) {
+                    $('#dateError').text('Debe seleccionar un inquilino').show();
+                    e.preventDefault();
+                    return false;
+                }
+
+                var isValid = false;
+                $.ajax({
+                    url: '/Contrato/ValidarFechas',
+                    type: 'GET',
+                    async: false,
+                    data: {
+                        idInmueble: $('#IdInmueble').val(),
+                        fechaInicio: fechaInicio,
+                        fechaFin: fechaFin
+                    },
+                    success: function(response) {
+                        isValid = response.isValid;
+                        if (!isValid) {
+                            $('#dateError').text('Las fechas seleccionadas se solapan con un contrato existente').show();
+                        }
+                    },
+                    error: function() {
+                        $('#dateError').text('Error al validar las fechas').show();
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                return true;
+            });
+        });
+    </script>
+}

@@ -1,0 +1,117 @@
+@model InmobiliariaAlcaraz.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Editar Inmueble";
+    var tipos = ViewBag.Tipos as List<InmobiliariaAlcaraz.Models.Tipo>;
+    var usos = ViewBag.Usos as List<InmobiliariaAlcaraz.Models.Uso>;
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Editar">
+    <input type="hidden" asp-for="IdInmueble" />
+
+    <div class="form-group">
+        <label asp-for="Direccion"></label>
+        <input asp-for="Direccion" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdTipo">Tipo</label>
+        <select asp-for="IdTipo" class="form-control">
+            <option value="">Seleccione un tipo</option>
+            @foreach (var tipo in tipos)
+            {
+                <option value="@tipo.IdTipo" selected="@(Model.IdTipo == tipo.IdTipo ? "selected" : "")">@tipo.Descripcion</option>
+
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdUso">Uso</label>
+        <select asp-for="IdUso" class="form-control">
+            <option value="">Seleccione un uso</option>
+            @foreach (var uso in usos)
+            {
+                <option value="@uso.IdUso" selected="@(Model.IdUso == uso.IdUso ? "selected" : "")">@uso.Descripcion</option>
+
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Ambientes"></label>
+        <input asp-for="Ambientes" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Superficie"></label>
+        <input asp-for="Superficie" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Precio"></label>
+        <input asp-for="Precio" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Latitud"></label>
+        <input asp-for="Latitud" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Longitud"></label>
+        <input asp-for="Longitud" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Disponible">Disponible</label>
+        <select asp-for="Disponible" class="form-control">
+            <option value="1" selected="@((Model.Disponible == 1).ToString())">Sí</option>
+            <option value="0" selected="@((Model.Disponible == 0).ToString())">No</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdPropietario">Propietario</label>
+        <select asp-for="IdPropietario" id="Propietario" class="form-control" style="width: 100%;">
+            <option value="@Model.IdPropietario" selected="selected">@Model.Duenio?.Nombre @Model.Duenio?.Apellido</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script>
+        $(document).ready(function () {
+            $('#Propietario').select2({
+                ajax: {
+                    url: '/Propietario/Buscar/',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { q: params.term };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.datos.map(function (item) {
+                                return {
+                                    id: item.idPropietario,
+                                    text: item.nombre + " " + item.apellido
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                placeholder: 'Seleccionar un propietario',
+                minimumInputLength: 1
+            });
+        });
+    </script>
+}

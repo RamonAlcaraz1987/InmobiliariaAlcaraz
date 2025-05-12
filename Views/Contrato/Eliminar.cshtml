@@ -1,0 +1,65 @@
+@model InmobiliariaAlcaraz.Models.Contrato
+@{
+    ViewData["Title"] = "Eliminar Contrato";
+}
+
+<h1>Eliminar Contrato</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Confirmar Eliminación del Contrato N° @Model.IdContrato</h5>
+    </div>
+    <div class="card-body">
+        <p class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> 
+            ¿Está seguro de que desea marcar este contrato como no disponible? Esta acción no se puede deshacer.
+        </p>
+        <dl class="row">
+            <dt class="col-sm-3">Número de Contrato</dt>
+            <dd class="col-sm-9">@Model.IdContrato</dd>
+
+            <dt class="col-sm-3">Inquilino</dt>
+            <dd class="col-sm-9">@Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</dd>
+
+            <dt class="col-sm-3">Inmueble</dt>
+            <dd class="col-sm-9">@Model.Inmueble?.Direccion</dd>
+
+            <dt class="col-sm-3">Monto Mensual</dt>
+            <dd class="col-sm-9">@Model.MontoMensual.ToString("C")</dd>
+
+            <dt class="col-sm-3">Fecha de Inicio</dt>
+            <dd class="col-sm-9">@Model.FechaInicio.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-3">Fecha de Fin</dt>
+            <dd class="col-sm-9">@Model.FechaFin.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-3">Estado Actual</dt>
+            <dd class="col-sm-9">
+                @if (Model.Estado == 1)
+                {
+                    <span class="badge bg-success">Activo</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactivo</span>
+                }
+            </dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <form asp-action="Eliminar" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="IdContrato" />
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Confirmar Eliminación
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

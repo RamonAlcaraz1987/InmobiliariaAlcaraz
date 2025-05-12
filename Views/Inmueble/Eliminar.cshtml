@@ -1,0 +1,28 @@
+@model InmobiliariaAlcaraz.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Eliminar Inmueble";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<h3>¿Estás seguro que querés eliminar este inmueble?</h3>
+<div>
+    <h4>@Model.Direccion</h4>
+    <dl class="row">
+        <dt class="col-sm-2">Ambientes</dt>
+        <dd class="col-sm-10">@Model.Ambientes</dd>
+
+        <dt class="col-sm-2">Precio</dt>
+        <dd class="col-sm-10">@Model.Precio</dd>
+
+        <dt class="col-sm-2">Disponible</dt>
+        <dd class="col-sm-10">@((Model.Disponible == 1) ? "Sí" : "No")</dd>
+    </dl>
+
+    <form asp-action="Eliminar">
+        <input type="hidden" asp-for="IdInmueble" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

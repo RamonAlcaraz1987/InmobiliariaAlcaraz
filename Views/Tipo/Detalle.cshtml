@@ -1,0 +1,14 @@
+@model InmobiliariaAlcaraz.Models.Tipo
+
+@{
+    ViewData["Title"] = "Detalle Tipo";
+}
+
+<h1>Detalle del Tipo</h1>
+
+<div>
+    <p><strong>ID:</strong> @Model.IdTipo</p>
+    <p><strong>Descripción:</strong> @Model.Descripcion</p>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Volver</a>

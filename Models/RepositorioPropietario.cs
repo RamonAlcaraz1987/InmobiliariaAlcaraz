@@ -134,7 +134,7 @@ namespace InmobiliariaAlcaraz.Models
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"
-                    SELECT IdPropietario, Dni, Nombre, Apellido, Apellido, Telefono, Email
+                    SELECT IdPropietario, Dni, Nombre, Apellido, Direccion, Telefono, Email
                     FROM Propietarios
                     ORDER BY IdPropietario
                     LIMIT {tamPagina} OFFSET {(paginaNro - 1) * tamPagina}
@@ -166,7 +166,57 @@ namespace InmobiliariaAlcaraz.Models
             return res;
         }
 
-
-
+          public int ObtenerCantidad()
+        {
+            int cantidad = 0;
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                var query = "SELECT COUNT(*) FROM propietarios";
+                using (var command = new MySqlCommand(query, (MySqlConnection)connection))
+                {
+                    cantidad = Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+            return cantidad;
+        } 
+        public IList<Propietario> BuscarPorNombre(string nombre)
+            {
+                List<Propietario> res = new List<Propietario>();
+                Propietario? p = null;
+                nombre = "%" + nombre + "%";
+                using (var connection = new MySqlConnection(connectionString))
+                {
+                    string sql = @"SELECT IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Direccion 
+                                FROM Propietarios
+                                WHERE Nombre LIKE @nombre OR Apellido LIKE @nombre";
+                    using (var command = new MySqlCommand(sql, connection))
+                    {
+                        command.Parameters.Add("@nombre", MySqlDbType.VarChar).Value = nombre;
+                        command.CommandType = CommandType.Text;
+                        connection.Open();
+                        var reader = command.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            p = new Propietario
+                            {
+                                IdPropietario = reader.GetInt32("IdPropietario"),
+                                Nombre = reader.GetString("Nombre"),
+                                Apellido = reader.GetString("Apellido"),
+                                Dni = reader.GetString("Dni"),
+                                Telefono = reader.GetString("Telefono"),
+                                Email = reader.GetString("Email"),
+                                Direccion = reader.GetString("Direccion"),
+                            };
+                            res.Add(p);
+                        }
+                        connection.Close();
+                    }
+                }
+                return res;
+            }
     }
-}
+}  
+
+
+    

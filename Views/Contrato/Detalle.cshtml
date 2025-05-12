@@ -1,0 +1,282 @@
+@model InmobiliariaAlcaraz.Models.Contrato
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Detalles del Contrato";
+    var paginaActual = ViewBag.PaginaActualPagos as int? ?? 1;
+    var totalPaginas = ViewBag.TotalPaginasPagos as int? ?? 1;
+    decimal? montoMulta = ViewBag.MontoMulta as decimal?;
+    var pagos = ViewBag.Pagos as List<InmobiliariaAlcaraz.Models.Pago> ?? new List<InmobiliariaAlcaraz.Models.Pago>();
+    bool hasMulta = pagos.Any(p => p.EsMulta == 1 && !p.Anulado);
+}
+
+<h1>Detalles del Contrato</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Contrato N° @Model.IdContrato</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Número de Contrato</dt>
+                    <dd class="col-sm-9">@Model.IdContrato</dd>
+
+                    <dt class="col-sm-3">Inquilino</dt>
+                    <dd class="col-sm-9">@Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</dd>
+
+                    <dt class="col-sm-3">Inmueble</dt>
+                    <dd class="col-sm-9">@Model.Inmueble?.Direccion</dd>
+
+                    <dt class="col-sm-3">Monto Mensual</dt>
+                    <dd class="col-sm-9">@Model.MontoMensual.ToString("C")</dd>
+
+                    <dt class="col-sm-3">Fecha de Inicio</dt>
+                    <dd class="col-sm-9">@Model.FechaInicio.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-3">Fecha de Fin</dt>
+                    <dd class="col-sm-9">@Model.FechaFin.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-3">Pagos Restantes</dt>
+                    <dd class="col-sm-9">@Model.PagosEsperados</dd>
+
+                    <dt class="col-sm-3">Estado</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Estado == 1)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactivo</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Fecha de Creación</dt>
+                    <dd class="col-sm-9">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+                    @if (User.IsInRole("Administrador"))
+                    {
+                        <dt class="col-sm-3">Usuario Creación</dt>
+                        <dd class="col-sm-9">@Model.UsuarioCreacion?.Nombre @Model.UsuarioCreacion?.Apellido</dd>
+
+                        <dt class="col-sm-3">Usuario Finalización</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.UsuarioFinalizacion != null)
+                            {
+                                @Model.UsuarioFinalizacion.Nombre @Model.UsuarioFinalizacion.Apellido
+                            }
+                            else
+                            {
+                                <span class="text-muted">No registrado</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-3">Fecha Fin Anticipado</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.FechaFinAnticipado.HasValue)
+                            {
+                                @Model.FechaFinAnticipado.Value.ToString("dd/MM/yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">No registrado</span>
+                            }
+                        </dd>
+                    }
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a asp-action="Index" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Volver al Listado
+                </a>
+                @if (Model.Estado == 1 && User.IsInRole("Administrador"))
+                {
+                    <a asp-action="FinalizarAnticipado" asp-route-id="@Model.IdContrato" class="btn btn-danger">
+                        <i class="bi bi-stop-circle"></i> Finalizar Anticipado
+                    </a>
+                }
+                @if (User.IsInRole("Administrador"))
+                {
+                    <a asp-action="Eliminar" asp-route-id="@Model.IdContrato" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Pagos del Contrato</h5>
+                <div>
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#crearPagoModal">
+                        <i class="bi bi-plus"></i> Pagar Adeudado
+                    </button>
+                    @if (Model.FechaFinAnticipado.HasValue && !hasMulta)
+                    {
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#crearMultaModal">
+                            <i class="bi bi-exclamation-triangle"></i> Pagar Multa
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                @if (pagos.Any())
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>N° Pago</th>
+                                <th>Monto</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pago in pagos)
+                            {
+                                <tr>
+                                    <td>@pago.NumeroPago</td>
+                                    <td>@pago.Monto.ToString("C")</td>
+                                    <td>@(pago.FechaPago?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>
+                                        @if (pago.Anulado)
+                                        {
+                                            <span class="badge bg-danger">Anulado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Activo</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (pago.EsMulta == 1)
+                                        {
+                                            <span class="badge bg-warning">Multa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">Regular</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <nav aria-label="Paginación de Pagos">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Detalle" asp-route-id="@Model.IdContrato" asp-route-paginaPagos="@(paginaActual - 1)">Anterior</a>
+                            </li>
+                            @for (int i = 1; i <= totalPaginas; i++)
+                            {
+                                <li class="page-item @(i == paginaActual ? "active" : "")">
+                                    <a class="page-link" asp-action="Detalle" asp-route-id="@Model.IdContrato" asp-route-paginaPagos="@i">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(paginaActual >= totalPaginas ? "disabled" : "")">
+                                <a class="page-link" asp-action="Detalle" asp-route-id="@Model.IdContrato" asp-route-paginaPagos="@(paginaActual + 1)">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+                else
+                {
+                    <p>No hay pagos registrados para este contrato.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="crearPagoModal" tabindex="-1" aria-labelledby="crearPagoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="crearPagoModalLabel">Crear Pago Adeudado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Pago" asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="IdContrato" value="@Model.IdContrato" />
+                    <input type="hidden" name="Monto" value="@Model.MontoMensual" />
+                    <input type="hidden" name="EsMulta" value="0" />
+                    <input type="hidden" name="IdUsuarioCreacion" value="@User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)" />
+                    <input type="hidden" name="FechaCreacion" value="@DateTime.Now" />
+                    <input type="hidden" name="Anulado" value="false" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Número de Pago</label>
+                        <input type="number" class="form-control" name="NumeroPago" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Pago</label>
+                        <input type="date" class="form-control" name="FechaPago" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Detalles</label>
+                        <textarea class="form-control" name="Detalle" rows="4">Pago adeudado</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto</label>
+                        <input type="text" class="form-control" value="@Model.MontoMensual.ToString("C")" readonly />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Pago</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="crearMultaModal" tabindex="-1" aria-labelledby="crearMultaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="crearMultaModalLabel">Crear Pago de Multa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Pago" asp-action="Crear" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="IdContrato" value="@Model.IdContrato" />
+                    <input type="hidden" name="Monto" value="@montoMulta" />
+                    <input type="hidden" name="EsMulta" value="1" />
+                    <input type="hidden" name="IdUsuarioCreacion" value="@User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)" />
+                    <input type="hidden" name="FechaCreacion" value="@DateTime.Now" />
+                    <input type="hidden" name="Anulado" value="false" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Número de Pago</label>
+                        <input type="number" class="form-control" name="NumeroPago" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Pago</label>
+                        <input type="date" class="form-control" name="FechaPago" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Detalles</label>
+                        <textarea class="form-control" name="Detalle" rows="4">Multa por finalización anticipada</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto de la Multa</label>
+                        <input type="text" class="form-control" value="@(montoMulta?.ToString("C") ?? "N/A")" readonly />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Multa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
